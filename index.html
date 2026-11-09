@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#ead3c1">
+<title>Grizzam — Your quizzes, one cozy place.</title>
+<link rel="icon" type="image/gif" href="assets/grizzamlogo.gif">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-theme="light">
+
+<!-- Grizzam refresh overlay -->
+<div id="grizzamLoading" class="grizzam-loading" hidden aria-live="polite" aria-busy="true">
+  <div class="loading-glass">
+    <img src="assets/grizzamloading.gif" alt="Grizzam loading" class="loading-bear">
+    <h2>Grizzling...</h2>
+    <p>Just a little bear-sized moment.</p>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- ============ WELCOME SCREEN ============ -->
+<section id="screen-welcome" class="screen active">
+  <div class="welcome-card">
+    <img src="assets/grizzamlogo.gif" alt="Grizzam bear mascot" class="welcome-logo">
+    <h1 class="brand-title">Grizzam</h1>
+    <p class="brand-tagline">Your quizzes, one cozy place.</p>
+    <button type="button" class="theme-toggle welcome-theme-toggle" data-theme-toggle aria-label="Toggle color theme"><i class="fa-solid fa-moon"></i><span>Switch theme</span></button>
+    <div class="role-buttons">
+      <button class="role-btn role-teacher" data-nav="teacher-login">
+        <i class="fa-solid fa-user-tie"></i>
+        <span>Teacher Login</span>
+      </button>
+      <button class="role-btn role-student" data-nav="student-library">
+        <i class="fa-solid fa-user-graduate"></i>
+        <span>Continue as Student</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TEACHER LOGIN ============ -->
+<section id="screen-teacher-login" class="screen">
+  <div class="card auth-card">
+    <button class="back-btn" data-nav="welcome"><i class="fa-solid fa-arrow-left"></i> Back</button>
+    <i class="fa-solid fa-user-tie auth-icon"></i>
+    <h2>Teacher Login</h2>
+    <form id="loginForm" class="form">
+      <label for="loginUsername">Username</label>
+      <input type="text" id="loginUsername" autocomplete="username" required>
+      <label for="loginPassword">Password</label>
+      <input type="password" id="loginPassword" autocomplete="current-password" required>
+      <p id="loginError" class="error-text" hidden></p>
+      <button type="submit" class="btn btn-primary" id="loginSubmitBtn">
+        <i class="fa-solid fa-right-to-bracket"></i> Log In
+      </button>
+    </form>
+  </div>
+</section>
+
+<!-- ============ TEACHER DASHBOARD ============ -->
+<section id="screen-teacher-dashboard" class="screen">
+  <header class="dash-header">
+    <div class="dash-header-left">
+      <img src="assets/grizzamlogo.gif" alt="Grizzam" class="dash-logo">
+      <div>
+        <h2>Grizzam</h2>
+        <span class="teacher-status"><i class="fa-solid fa-user-tie"></i> Teacher Dashboard</span>
+      </div>
+    </div>
+    <div class="dash-header-right">
+      <button type="button" class="btn btn-icon theme-toggle" data-theme-toggle aria-label="Toggle color theme" title="Toggle theme"><i class="fa-solid fa-moon"></i></button>
+      <button type="button" id="teacherRefreshBtn" class="btn btn-icon" title="Refresh quizzes" aria-label="Refresh quizzes">
+        <i class="fa-solid fa-rotate"></i>
+      </button>
+      <button id="logoutBtn" class="btn btn-danger">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+      </button>
+    </div>
+  </header>
+
+  <main class="dash-main">
+    <div class="mascot-note"><span>Made cozy with</span><img src="assets/grizzamlogo.gif" alt="Grizzam bear" /><strong>Grizzam</strong></div>
+    <div class="dash-toolbar">
+      <div class="search-bar">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="teacherSearch" placeholder="Search quizzes..." aria-label="Search quizzes">
+      </div>
+      <select id="teacherFilterSubject" class="filter-select">
+        <option value="">All Subjects</option>
+      </select>
+      <select id="teacherFilterStatus" class="filter-select">
+        <option value="">All Status</option>
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+      </select>
+      <button id="openAddQuizBtn" class="btn btn-primary">
+        <i class="fa-solid fa-plus"></i> Add Quiz
+      </button>
+    </div>
+
+    <div id="teacherLastRefresh" class="last-refresh"></div>
+
+    <div id="teacherQuizList" class="quiz-grid"></div>
+    <div id="teacherEmptyState" class="empty-state" hidden>
+      <img src="assets/grizzamlogo.gif" alt="Grizzam mascot" class="empty-bear">
+      <i class="fa-solid fa-clipboard-question"></i>
+      <p>No quizzes yet</p>
+      <span>Add your first quiz to get started.</span>
+    </div>
+  </main>
+</section>
+
+<!-- ============ GRIZZAM LOGOUT CONFIRMATION ============ -->
+<div id="logoutConfirmModal" class="modal-overlay logout-overlay" role="dialog" aria-modal="true" aria-labelledby="logoutModalTitle" aria-describedby="logoutModalDescription" hidden>
+  <div class="modal modal-small logout-modal">
+    <button type="button" class="modal-close" id="closeLogoutModalBtn" aria-label="Cancel logout"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+    <img src="assets/grizzamlogo.gif" alt="Grizzam bear mascot" class="logout-bear">
+    <span class="logout-eyebrow"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Teacher session</span>
+    <h2 id="logoutModalTitle">Taking a little break?</h2>
+    <p id="logoutModalDescription">Are you sure you want to log out of your Grizzam teacher dashboard? Your saved quizzes will stay right where they are.</p>
+    <div class="logout-actions">
+      <button type="button" class="btn btn-secondary" id="cancelLogoutBtn">Stay logged in</button>
+      <button type="button" class="btn btn-danger" id="confirmLogoutBtn"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Log out</button>
+    </div>
+    <span class="logout-footnote">Your next visit starts at the welcome screen.</span>
+  </div>
+</div>
+
+<!-- ============ QUIZ FORM MODAL (Add/Edit) ============ -->
+<div id="quizFormModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="quizFormTitle" hidden>
+  <div class="modal">
+    <button type="button" class="modal-close" id="closeQuizFormBtn" aria-label="Close quiz form"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+    <h2 id="quizFormTitle"><i class="fa-solid fa-plus"></i> Add Quiz</h2>
+    <form id="quizForm" class="form">
+      <input type="hidden" id="quizId">
+      <label for="quizTitle">Title *</label>
+      <input type="text" id="quizTitle" required>
+
+      <label for="quizSubject">Subject *</label>
+      <input type="text" id="quizSubject" required>
+
+      <label for="quizDescription">Description</label>
+      <textarea id="quizDescription" rows="3"></textarea>
+
+      <label for="quizType">Quiz Source *</label>
+      <select id="quizType" required>
+        <option value="HTML">HTML File Upload</option>
+        <option value="URL">External URL / Link</option>
+      </select>
+
+      <div id="htmlUploadGroup">
+        <label for="quizHtmlFile">HTML Quiz File *</label>
+        <input type="file" id="quizHtmlFile" accept=".html,.htm,text/html">
+        <small class="form-help">Upload the HTML quiz file. Students will open it through the Grizzam link.</small>
+      </div>
+
+      <div id="externalLinkGroup" hidden>
+        <label for="quizLink">Quiz Link *</label>
+        <input type="url" id="quizLink" placeholder="https://...">
+      </div>
+
+      <label for="quizStatus">Status *</label>
+      <select id="quizStatus" required>
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+      </select>
+
+      <p id="quizFormError" class="error-text" hidden></p>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" id="cancelQuizFormBtn">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="quizFormSubmitBtn">
+          <i class="fa-solid fa-floppy-disk"></i> Save Quiz
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ CONFIRM DELETE MODAL ============ -->
+<div id="confirmDeleteModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle" hidden>
+  <div class="modal modal-small">
+    <i class="fa-solid fa-triangle-exclamation confirm-icon"></i>
+    <h2 id="deleteModalTitle">Delete this quiz?</h2>
+    <p>This action cannot be undone.</p>
+    <div class="form-actions">
+      <button class="btn btn-secondary" id="cancelDeleteBtn">Cancel</button>
+      <button class="btn btn-danger" id="confirmDeleteBtn">
+        <i class="fa-solid fa-trash"></i> Delete
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ STUDENT LIBRARY ============ -->
+<section id="screen-student-library" class="screen">
+  <header class="dash-header">
+    <div class="dash-header-left">
+      <img src="assets/grizzamlogo.gif" alt="Grizzam" class="dash-logo">
+      <div>
+        <h2>Grizzam</h2>
+        <span class="teacher-status"><i class="fa-solid fa-user-graduate"></i> Quiz Library</span>
+      </div>
+    </div>
+    <div class="dash-header-right">
+      <button type="button" class="btn btn-icon theme-toggle" data-theme-toggle aria-label="Toggle color theme" title="Toggle theme"><i class="fa-solid fa-moon"></i></button>
+      <button type="button" id="studentRefreshBtn" class="btn btn-icon" title="Refresh quizzes" aria-label="Refresh quizzes">
+        <i class="fa-solid fa-rotate"></i>
+      </button>
+      <button class="btn btn-secondary" data-nav="welcome">
+        <i class="fa-solid fa-arrow-left"></i> Exit
+      </button>
+    </div>
+  </header>
+
+  <main class="dash-main">
+    <div class="mascot-note"><span>Made cozy with</span><img src="assets/grizzamlogo.gif" alt="Grizzam bear" /><strong>Grizzam</strong></div>
+    <div class="dash-toolbar">
+      <div class="search-bar">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="studentSearch" placeholder="Search quizzes..." aria-label="Search quizzes">
+      </div>
+      <select id="studentFilterSubject" class="filter-select">
+        <option value="">All Subjects</option>
+      </select>
+      <select id="studentFilterType" class="filter-select">
+        <option value="">All Types</option>
+        <option value="HTML">HTML</option>
+        <option value="URL">URL</option>
+      </select>
+    </div>
+
+    <div id="studentLastRefresh" class="last-refresh"></div>
+    <div id="studentSyncNotice" class="sync-notice" hidden></div>
+
+    <div id="studentQuizList" class="quiz-grid"></div>
+    <div id="studentEmptyState" class="empty-state" hidden>
+      <img src="assets/grizzamlogo.gif" alt="Grizzam mascot" class="empty-bear">
+      <i class="fa-solid fa-clipboard-question"></i>
+      <p>No quizzes yet</p>
+      <span>There are no active quizzes available right now.</span>
+    </div>
+  </main>
+</section>
+
+<script src="script.js"></script>
+</body>
+</html>
